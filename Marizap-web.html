@@ -1,0 +1,221 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Marizap | Dark Edition</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: #050505; color: #fff; height: 100dvh; overflow: hidden; display: flex; justify-content: center; }
+
+/* JUMPSCARE */
+#jumpscare {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 999999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+#jumpscare img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* INTRO NORMAL & DEV */
+#intro, #dev-intro {
+    position: fixed; inset: 0; background: #000; z-index: 9999;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    transition: 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+.scanner { font-size: 10px; color: #8b5cf6; font-family: monospace; margin-bottom: 20px; letter-spacing: 2px; text-transform: uppercase; animation: blink 1s infinite alternate; }
+@keyframes blink { 0%{opacity:0.2} 100%{opacity:1} }
+
+.bar-container { width: 250px; height: 3px; background: #111; position: relative; overflow: hidden; margin-bottom: 30px; border-radius: 10px; }
+.bar-progress { position: absolute; width: 0%; height: 100%; background: #8b5cf6; animation: load 2s forwards; }
+@keyframes load { to { width: 100%; } }
+
+.connect-btn { 
+    opacity: 0; animation: fadeIn 0.5s 2s forwards;
+    background: #8b5cf6; color: #fff; border: none;
+    padding: 18px 40px; border-radius: 12px; cursor: pointer; font-weight: 900;
+    font-size: 14px; letter-spacing: 1px; transition: 0.3s; box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ESTRUTURA APP */
+.app { width: 100%; max-width: 500px; background: #0d0d0d; height: 100dvh; display: none; flex-direction: column; color: #fff; border-left: 1px solid #1a1a1a; border-right: 1px solid #1a1a1a; position: relative; }
+.screen { flex: 1; display: none; flex-direction: column; justify-content: center; padding: 40px; gap: 15px; text-align: center; }
+
+h1 { font-size: 36px; font-weight: 900; letter-spacing: -2px; color: #fff; }
+input { padding: 18px; border: 1px solid #222; background: #151515; color: #fff; border-radius: 12px; font-size: 16px; outline: none; transition: 0.3s; text-align: center; }
+input:focus { border-color: #8b5cf6; box-shadow: 0 0 10px rgba(139, 92, 246,0.2); }
+.btn-purple { padding: 18px; background: #8b5cf6; color: #fff; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+.btn-purple:active { transform: scale(0.95); }
+
+/* CHAT NORMAL & DEV */
+#chat-ui, #chat-dev { display: none; flex-direction: column; height: 100%; position: relative; z-index:1; }
+header { padding: 20px; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; background: #0d0d0d; }
+header h2 { font-size: 12px; font-weight: 800; color: #444; letter-spacing: 1px; }
+#messages, #messages-dev { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #080808; }
+
+.msg { max-width: 85%; animation: msgIn 0.3s ease; }
+@keyframes msgIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.msg b { display: block; font-size: 10px; font-weight: 900; color: #8b5cf6; margin-bottom: 4px; text-transform: uppercase; }
+.bubble { background: #151515; padding: 14px 18px; border-radius: 18px; font-size: 15px; color: #eee; line-height: 1.5; border: 1px solid #1a1a1a; }
+.mine { align-self: flex-end; }
+.mine .bubble { background: #8b5cf6; color: #fff; border: none; }
+.mine b { text-align: right; color: #fff; opacity: 0.6; }
+
+/* BARRA DE ENTRADA */
+.input-bar { padding: 20px; border-top: 1px solid #1a1a1a; display: flex; align-items: center; gap: 12px; background: #0d0d0d; }
+.input-bar input { flex: 1; border: none; text-align: left; font-size: 15px; padding: 12px; border-radius: 0; background: transparent; }
+.icon-btn { background: none; border: none; cursor: pointer; font-size: 20px; color: #444; transition: 0.2s; }
+.icon-btn:hover { color: #8b5cf6; }
+
+/* MENU ADMIN */
+#admin-menu { display: none; position: absolute; bottom: 85px; left: 20px; right: 20px; background: #151515; border: 1px solid #222; border-radius: 15px; padding: 10px; flex-direction: column; gap: 5px; z-index: 100; }
+.admin-opt { padding: 12px; border: none; background: #1a1a1a; color: #fff; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px; text-align: left; }
+.admin-opt:hover { background: #8b5cf6; }
+</style>
+</head>
+<body>
+
+<div id="jumpscare"><img id="jumpImg"></div>
+
+<!-- INTRO NORMAL -->
+<div id="intro">
+    <div class="scanner">CARREGANDO PROTOCOLOS DE ÁUDIO... OK</div>
+    <h1>MARIZAP</h1>
+    <div class="bar-container"><div class="bar-progress"></div></div>
+    <button class="connect-btn" onclick="liberarGeral()">CONECTAR AGORA</button>
+</div>
+
+<div class="app">
+    <div id="screen-name" class="screen" style="display:flex;">
+        <h1>Quem é você?</h1>
+        <input id="uName" type="text" placeholder="Digite seu nome...">
+        <button class="btn-purple" onclick="telaSalas()">PRÓXIMO</button>
+    </div>
+
+    <div id="screen-rooms" class="screen">
+        <h1>Salas</h1>
+        <button class="btn-purple" onclick="criarSala()">CRIAR NOVA SALA</button>
+        <div style="display:flex; gap:10px; margin-top:5px">
+            <input id="roomInp" placeholder="CÓDIGO" style="flex:1">
+            <button class="btn-purple" onclick="entrarSala()">ENTRAR</button>
+        </div>
+    </div>
+
+    <div id="chat-ui">
+        <header>
+            <h2 id="roomDisplay">SALA: -----</h2>
+            <button onclick="toggleAdmin()" class="icon-btn">⚙️</button>
+        </header>
+        <div id="messages"></div>
+        <div id="admin-menu">
+            <button class="admin-opt" onclick="cmd('CHASE')">⚡ MODO CHASE (SIGMA)</button>
+            <button class="admin-opt" onclick="cmdURL()">🔗 ABRIR SITE PARA TODOS</button>
+            <button class="admin-opt" onclick="cmdAudio()">🔊 TOCAR ÁUDIO MYINSTANTS</button>
+            <button class="admin-opt" onclick="cmdJump()">👻 JUMPSCARE GLOBAL</button>
+        </div>
+        <div class="input-bar">
+            <button onclick="document.getElementById('f').click()" class="icon-btn">📎</button>
+            <input id="msg" placeholder="Escreva algo...">
+            <button onclick="enviar()" style="border:none; background:none; color:#8b5cf6; font-weight:900; cursor:pointer; padding:0 10px;">ENVIAR</button>
+        </div>
+        <input type="file" id="f" hidden onchange="upload(this)">
+    </div>
+
+    <div id="dev-intro" style="display:none;">
+        <div class="scanner">ACESSO DEV INICIADO...</div>
+        <h1>MARIZAP DEV</h1>
+        <div class="bar-container"><div class="bar-progress"></div></div>
+    </div>
+
+    <div id="chat-dev">
+        <header><h2>SALA DEV</h2></header>
+        <div id="messages-dev"></div>
+        <div class="input-bar">
+            <input id="msg-dev" placeholder="Escreva algo...">
+            <button onclick="enviarDev()">ENVIAR</button>
+        </div>
+    </div>
+</div>
+
+<audio id="sNotify" src="https://www.myinstants.com/media/sounds/notificacao-estourada.mp3"></audio>
+<audio id="sChase" src="https://www.myinstants.com/media/sounds/kordhell-murder-in-my-mind-loud-version.mp3"></audio>
+<audio id="sGen"></audio>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+const db = getDatabase(initializeApp({ databaseURL:"https://ina-server-default-rtdb.firebaseio.com/" }));
+let nick="", salaAtual="", devNick="";
+const msgVistas = new Set();
+const sn=document.getElementById('sNotify');
+const sc=document.getElementById('sChase');
+const sg=document.getElementById('sGen');
+
+window.liberarGeral=()=>{document.getElementById('intro').style.display='none';document.querySelector('.app').style.display='flex';}
+window.telaSalas=()=>{nick=document.getElementById('uName').value;document.getElementById('screen-name').style.display='none';document.getElementById('screen-rooms').style.display='flex';}
+window.criarSala=()=>{salaAtual=Math.random().toString(36).substring(2,7).toUpperCase();iniciarChat();}
+window.entrarSala=()=>{salaAtual=document.getElementById('roomInp').value.toUpperCase();iniciarChat();}
+
+function iniciarChat(){
+document.getElementById('screen-rooms').style.display='none';
+document.getElementById('chat-ui').style.display='flex';
+document.getElementById('roomDisplay').innerText="SALA: "+salaAtual;
+
+onChildAdded(ref(db,"chats/"+salaAtual),(snap)=>{
+if(msgVistas.has(snap.key)) return;
+msgVistas.add(snap.key);
+const d=snap.val();
+
+if(d.type==="CHASE"){ sc.play(); }
+else if(d.type==="URL"){ window.open(d.val,'_blank'); }
+else if(d.type==="AUDIO"){ sg.src=d.val; sg.play(); }
+else if(d.type==="JUMPSCARE"){ ativarJump(d); }
+else{
+const div=document.createElement('div');
+div.className="msg";
+div.innerHTML=`<b>${d.name}</b><div class="bubble">${d.text||""}</div>`;
+document.getElementById('messages').appendChild(div);
+}
+});
+}
+
+window.enviar=()=>{const i=document.getElementById('msg');push(ref(db,"chats/"+salaAtual),{name:nick,text:i.value});i.value="";}
+window.upload=(input)=>{const reader=new FileReader();reader.onload=(e)=>push(ref(db,"chats/"+salaAtual),{name:nick,img:e.target.result});reader.readAsDataURL(input.files[0]);}
+window.toggleAdmin=()=>{let a=document.getElementById('admin-menu');a.style.display=a.style.display==='flex'?'none':'flex';}
+window.cmd=(t)=>{push(ref(db,"chats/"+salaAtual),{type:t});}
+window.cmdURL=()=>{let u=prompt("URL:");if(u)push(ref(db,"chats/"+salaAtual),{type:"URL",val:u});}
+window.cmdAudio=()=>{let u=prompt("Audio:");if(u)push(ref(db,"chats/"+salaAtual),{type:"AUDIO",val:u});}
+
+window.cmdJump=()=>{
+let img=prompt("Link da imagem:");
+let audio=prompt("Link do áudio:");
+if(!img||!audio) return;
+push(ref(db,"chats/"+salaAtual),{type:"JUMPSCARE",img,audio});
+}
+
+function ativarJump(d){
+const box=document.getElementById("jumpscare");
+const img=document.getElementById("jumpImg");
+img.src=d.img;
+box.style.display="flex";
+const a=new Audio(d.audio);
+a.volume=1;
+a.play();
+setTimeout(()=>box.style.display="none",3000);
+}
+
+window.enviarDev=()=>{}
+</script>
+</body>
+</html>
